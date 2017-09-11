@@ -132,7 +132,7 @@ Peering session information are in a list of objects in the following format:
     "session_name": str,
     "ip_address": str
 }
-
+```
 
 Notes
 -----
