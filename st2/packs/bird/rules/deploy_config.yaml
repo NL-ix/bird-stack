@@ -1,0 +1,15 @@
+---
+name: deploy_config
+pack: bird
+description: WebHook for deploying a new BIRD configuration file
+enabled: true
+trigger:
+  type: core.st2.webhook
+  parameters:
+    url: deployconfig
+action:
+  ref: bird.deploy_config
+  parameters:
+    router_id: "{{trigger.body.router_id}}"
+    ip_version: "{{trigger.body.ip_version}}"
+    config_file: "{{trigger.body.config_file}}"

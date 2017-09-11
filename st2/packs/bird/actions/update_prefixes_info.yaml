@@ -1,0 +1,16 @@
+---
+name: update_prefixes_info
+pack: bird
+runner_type: python-script
+description: Retrieves prefixes from IRR databases using BGPQ3 and store them in the St2 datastore
+enabled: true
+entry_point: update_prefixes_info.py
+parameters:
+  as_objects:
+    type: array
+    description: List of the as-objects for which you want to retrieve prefixes
+    required: true
+  ip_version:
+    type: string
+    description: Prefixes IP version (ipv4, ipv6)
+    default: ipv4

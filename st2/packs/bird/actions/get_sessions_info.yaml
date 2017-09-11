@@ -1,0 +1,18 @@
+---
+name: get_sessions_info
+pack: bird
+runner_type: python-script
+description: Retrieves sessions information from the specified BIRD Route-Server
+enabled: true
+entry_point: get_sessions_info.py
+parameters:
+  router_id:
+    type: string
+    description: router id of the target BIRD server
+    required: true
+    position: 1
+  ip_version:
+    type: string
+    description: IP version of the process to affect on the target BIRD server (ipv4 or ipv6)
+    default: ipv4
+    position: 2

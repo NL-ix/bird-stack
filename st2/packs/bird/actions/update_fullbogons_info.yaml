@@ -1,0 +1,12 @@
+---
+name: update_fullbogons_info
+pack: bird
+runner_type: python-script
+description: Retrieves (and store) fullbogons from the source urls specified in the pack configuration file
+enabled: true
+entry_point: update_fullbogons_info.py
+parameters:
+  ip_version:
+    type: string
+    description: Prefixes IP version (ipv4, ipv6)
+    default: ipv4

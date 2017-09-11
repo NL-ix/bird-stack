@@ -1,0 +1,18 @@
+description "BIRD proxy"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+pre-start exec install -d -m2750 -o bird-proxy -g www-data /var/run/bird-proxy
+
+respawn
+chdir /
+
+exec start-stop-daemon \
+         --start \
+         --chuid bird-proxy:www-data \
+         --exec /opt/venvs/bird-proxy/bin/gunicorn \
+            -- --workers 3 \
+               --umask 007 \
+               --bind unix:/var/run/bird-proxy/bird-proxy.sock \
+               bird_proxy.wsgi:app

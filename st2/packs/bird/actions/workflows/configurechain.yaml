@@ -1,0 +1,18 @@
+---
+chain:
+  -
+    name: "generate"
+    ref: "bird.generate_config"
+    parameters:
+      router_id: "{{router_id}}"
+      peers_data_datastore_key: "{{peers_data_datastore_key}}"
+      ip_version: "{{ip_version}}"
+    on-success: "deploy"
+  -
+    name: "deploy"
+    ref: "bird.deploy_config"
+    parameters:
+      router_id: "{{router_id}}"
+      ip_version: "{{ip_version}}"
+      config_file: "{{generate.result}}"
+default: "generate"

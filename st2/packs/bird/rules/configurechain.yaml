@@ -1,0 +1,16 @@
+---
+name: configurechain
+pack: bird
+description: WebHook for triggering the generation and deployment of a new BIRD configuration 
+enabled: true
+trigger:
+  type: core.st2.webhook
+  parameters:
+    url: configure
+action:
+  ref: bird.configurechain
+  parameters:
+    router_id: "{{trigger.body.router_id}}"
+    peers_data: "{{trigger.body.peers_data}}"
+    peers_data_datastore_key: "{{trigger.body.peers_data_datastore_key}}"
+    ip_version: "{{trigger.body.ip_version}}"

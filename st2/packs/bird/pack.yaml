@@ -1,0 +1,11 @@
+---
+name: bird
+ref: bird
+description: Integration pack for BIRD route server (http://bird.network.cz/)
+keywords:
+  - BIRD
+version: 1.2.1
+author: NL-ix
+email: info@nl-ix.net
+contributors:
+  - Diego Luis Neto (diellenne)

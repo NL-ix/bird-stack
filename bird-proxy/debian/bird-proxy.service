@@ -1,0 +1,12 @@
+[Unit]
+Description=BIRD proxy
+
+[Service]
+User=bird-proxy
+Group=www-data
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/run/bird-proxy
+ExecStartPre=/bin/chmod 2750 /var/run/bird-proxy
+ExecStartPre=/bin/chown -R bird-proxy:www-data /var/run/bird-proxy
+
+ExecStart=/opt/venvs/bird-proxy/bin/gunicorn --workers 3 --umask 007 --bind unix:/var/run/bird-proxy/bird-proxy.sock bird_proxy.wsgi:app

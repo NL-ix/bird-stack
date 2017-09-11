@@ -1,0 +1,28 @@
+---
+name: generate_config
+pack: bird
+runner_type: python-script
+description: Generates and locally store a BIRD configuration file
+enabled: true
+entry_point: generate_config.py
+parameters:
+  router_id:
+    type: string
+    description: router id of the target BIRD server
+    required: true
+    position: 1
+  peers_data:
+    type: array
+    description: BIRD configuration data (if present the parameter peers_data_datastore_key will be ignored)
+    required: false
+    position: 2
+  peers_data_datastore_key:
+    type: string
+    description: St2 datastore key to retrieve peers config data
+    required: false
+    position: 3
+  ip_version:
+    type: string
+    description: IP version of the process to affect on the target BIRD server (ipv4 or ipv6)
+    default: ipv4
+    position: 4

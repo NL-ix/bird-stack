@@ -1,0 +1,5 @@
+# Requirements
+
+requests==2.2.1
+Jinja2==2.8.1
+ipaddr>=2.1.11

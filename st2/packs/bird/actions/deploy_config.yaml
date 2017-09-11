@@ -1,0 +1,23 @@
+---
+name: deploy_config
+pack: bird
+runner_type: python-script
+description: Deploys a locally stored BIRD configuration file using bird-proxy
+enabled: true
+entry_point: deploy_config.py
+parameters:
+  router_id:
+    type: string
+    description: router id of the target BIRD server
+    required: true
+    position: 1
+  ip_version:
+    type: string
+    description: IP version of the process to affect on the target BIRD server (ipv4 or ipv6)
+    default: ipv4
+    position: 2
+  config_file:
+    type: string
+    description: BIRD configuration file path
+    required: true
+    position: 3

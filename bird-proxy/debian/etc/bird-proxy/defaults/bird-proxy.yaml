@@ -1,0 +1,5 @@
+BIRD_SOCKET: /var/run/bird/bird.ctl
+BIRD6_SOCKET: /var/run/bird/bird6.ctl
+BIRD_CONFIG_FOLDER: /var/bird
+
+API_TOKEN: 'replacemewithtoken'

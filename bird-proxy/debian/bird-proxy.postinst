@@ -1,0 +1,60 @@
+#!/bin/sh
+## postinst script for bird-proxy
+##
+## see: dh_installdeb(1)
+#
+
+USERNAME="bird-proxy"
+BIRD_GROUP="bird"
+BIRD_CONFIG_FILE_DIR="/var/bird"
+
+create_users() {
+    echo "Setting up users"
+
+    /usr/bin/id "${USERNAME}" > /dev/null 2>&1
+
+    if [ $? -eq 0 ]; then
+        echo "${USERNAME} already exists, skipping"
+        return
+    fi
+
+    /usr/sbin/useradd \
+        -M \
+        --system \
+        --shell /bin/false \
+        "${USERNAME}"
+
+    echo "${USERNAME} created"
+
+    /usr/sbin/usermod -aG "${BIRD_GROUP}" "${USERNAME}"
+
+    echo "${USERNAME} added to group ${BIRD_GROUP}"
+}
+
+create_config_dir() {
+    echo "Setting up BIRD config file dir"
+
+    /bin/mkdir -p "${BIRD_CONFIG_FILE_DIR}"
+    /bin/chown "${USERNAME}:${BIRD_GROUP}" "${BIRD_CONFIG_FILE_DIR}"
+}
+
+case "$1" in
+    configure)
+        create_users
+        create_config_dir
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        exit 0
+        ;;
+
+    *)
+
+        exit 1
+        ;;
+
+esac
+
+service bird-proxy restart
+
+exit 0

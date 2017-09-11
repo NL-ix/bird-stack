@@ -1,0 +1,2 @@
+debian/etc/nginx/sites-available/bird-proxy.conf etc/nginx/sites-available/
+debian/etc/bird-proxy/defaults/bird-proxy.yaml etc/bird-proxy/defaults/

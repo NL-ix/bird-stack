@@ -1,0 +1,102 @@
+---
+# PACK CONFIG
+st2_base_url: "http://localhost"
+config_storage_basedir: "/home/stanley/bird/config"
+
+# BGPQ3 CONFIG
+bgpq3_path: bgpq3
+bgpq3_host: rr.ntt.net
+bgpq3_sources: "RIPE, APNIC,AFRINIC, ARIN, NTTCOM, ALTDB, BBOI, BELL, GT, JPIRR, LEVEL3, RADB, RGNET, SAVVIS, TC"
+
+# FULLBOGONS
+ipv4_fullbogons_source_urls:
+- "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt"
+ipv6_fullbogons_source_urls:
+- "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv6.txt"
+
+# DROP LIST
+ipv4_drop_list_source_urls:
+- "https://www.spamhaus.org/drop/drop.txt"
+- "https://www.spamhaus.org/drop/edrop.txt"
+ipv6_drop_list_source_urls:
+- "https://www.spamhaus.org/drop/dropv6.txt"
+
+# ROUTE-SERVERS CONFIGURATION
+bird_servers:
+  
+  91.194.218.1:
+
+    host: "http://91.194.218.1"
+    listen_web_port: 8000
+    api_token: "replacemewithauthenticationtoken"
+    peering_network: 91.194.218.0
+    
+    ipv4_config_template: rix_peering_ipv4.txt
+    ipv4_config_context_values:
+      router_id: "91.194.218.1"
+      filter_community_code: 1
+      prepend_community_code: 2
+      origin_community_code: 3
+      listen_bgp_address: "91.194.218.1"
+      local_as_number: "43339"
+      unwanted_prefixes:
+        "[0.0.0.0/8+, 10.0.0.0/8+, 100.64.0.0/10+, 127.0.0.0/8+,
+          169.254.0.0/16+, 172.16.0.0/12+, 192.0.0.0/24+, 192.0.2.0/24+,
+          192.168.0.0/16+, 198.18.0.0/15+, 198.51.100.0/24+,
+          203.0.113.0/24+, 224.0.0.0/3+,
+          0.0.0.0/0, 91.194.218.0/24+]"
+      max_prefix: 5000
+      start_delay_time: 60
+      connect_delay_time: 60
+      bird_logfile: "/var/log/bird.log"
+
+      ipv6_config_template: rix_peering_ipv6.txt
+      ipv6_config_context_values:
+        router_id: "91.194.218.1"
+        filter_community_code: 1
+        prepend_community_code: 2
+        origin_community_code: 3
+        listen_bgp_address: "2001:7f8:61::a504:3339:1"
+        local_as_number: "43339"
+        unwanted_prefixes: "[2001:7f8:61::/48+]"
+        max_prefix: 5000
+        start_delay_time: 60
+        connect_delay_time: 60
+        bird_logfile: "/var/log/bird.log"
+
+  193.239.116.255:
+
+    host: "http://193.239.116.255"
+    listen_web_port: 8000
+    api_token: "replacemewithauthenticationtoken"
+    peering_network: 193.239.116.0
+
+    ipv4_config_template: nlix_peering_ipv4.txt
+    ipv4_config_context_values:
+      router_id: "193.239.116.255"
+      filter_community_code: 3
+      prepend_community_code: 4
+      origin_community_code: 5
+      listen_bgp_address: "193.239.116.255"
+      listen_bgp_port: 179
+      peering_prefix: "193.239.116.0/22+"
+      local_as_number: "34307"
+      max_prefix: 700
+      start_delay_time: 60
+      connect_delay_time: 60
+      bird_logfile: "/var/log/bird.log"
+
+    ipv6_config_template: nlix_peering_ipv6.txt
+    ipv6_config_context_values:
+      router_id: "193.239.116.255"
+      filter_community_code: 3
+      prepend_community_code: 4
+      origin_community_code: 5
+      listen_bgp_address: "2001:7f8:13::a503:4307:1"
+      listen_bgp_port: "179"
+      peering_prefix: "2001:7f8:13::/64+"
+      local_as_number: "34307"
+      max_prefix: 700
+      start_delay_time: 60
+      connect_delay_time: 60
+      bird_logfile: "/var/log/bird.log"

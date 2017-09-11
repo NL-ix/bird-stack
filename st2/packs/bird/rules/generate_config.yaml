@@ -1,0 +1,17 @@
+---
+name: generate_config
+pack: bird
+description: WebHook for generating a new BIRD configuration file
+enabled: true
+trigger:
+  type: core.st2.webhook
+  parameters:
+    url: generateconfig
+action:
+  ref: bird.generate_config
+  parameters:
+    router_id: "{{trigger.body.router_id}}"
+    ip_version: "{{trigger.body.ip_version}}"
+    peers_data: "{{trigger.body.peers_data}}"
+    peers_data_datastore_key: "{{trigger.body.peers_data_datastore_key}}"
+

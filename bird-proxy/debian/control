@@ -1,0 +1,12 @@
+Source: bird-proxy
+Maintainer: NL-ix <info@nl-ix.net>
+Section: devel
+Priority: optional
+Build-Depends: debhelper (>= 9), python, python-dev, dh-python, dh-virtualenv (>= 1.0),
+    python-pip, python-setuptools
+X-Python-Version: >= 2.7
+
+Package: bird-proxy
+Architecture: all
+Depends: python, nginx, python-virtualenv
+Description: Web API to communicate with BIRD
