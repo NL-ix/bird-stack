@@ -82,6 +82,7 @@ All the functions must be called using HTTP `POST`
 
 request body has to include the keys:
 
+- `api_token`: Authentication token
 - `ip_version`: Version of the BIRD process to affect ('ipv4', 'ipv6')
 
 configuration file must be included in `request.files`
@@ -106,6 +107,7 @@ JSON response in the following format:
 
 request body has to include the keys:
 
+- `api_token`: Authentication token
 - `ip_version`: Version of the BIRD process to affect ('ipv4', 'ipv6')
 
 *Output*
@@ -117,9 +119,11 @@ JSON response in the folloing format:
     "outcome": outcome of the operation (True, False),
     "message": peering session information
  }
+ ```
 
 Peering session information are in a list of objects in the following format:
-    
+
+```
 {
     "as_number": integer,
     "bgp_state": string,
