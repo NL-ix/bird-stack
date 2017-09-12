@@ -1,0 +1,225 @@
+###################
+# GENERAL OPTIONS #
+###################
+
+log "{{ bird_logfile }}" { info, trace, warning, error, auth, fatal, bug };
+
+timeformat base         iso long;
+timeformat log          iso long;
+timeformat protocol     iso long;
+timeformat route        iso long;
+
+# Set router id
+router id {{ router_id }};
+listen bgp address {{ listen_bgp_address }} port {{ listen_bgp_port }};
+
+# Turn on global debugging of all protocols
+debug protocols off;
+debug commands 2;
+
+# General Inbound Filter for all IPv6 peers/neighbors
+# Filter bogons prefix(es) and private AS-es
+# Filter out route-server peering prefix(es) and native prefix(es)
+
+function avoid_martians()
+prefix set default_route;    # Default Route
+prefix set ipv6_bogons;      # Bogus IPv6 like RFC1918 private IPv6
+prefix set peering_prefix;   # Peering prefix(es)
+prefix set full_bogons;      # Full bogons list
+prefix set spamhaus_drop;    # Spamhaus DROP list
+int    set private_as_16bit; # Private 16-bit AS range [ 64512..65535 ]
+{
+    # Filter out default route
+    default_route    = [ ::/0 ];
+
+    # Filter out RFC1918 addresses
+    ipv6_bogons      = [
+      0000::/8+,
+      0100::/8+,
+      0200::/7+,0400::/6+,
+      0800::/5+,1000::/4+,
+      4000::/3+,6000::/3+,
+      8000::/3+,A000::/3+,
+      C000::/3+,E000::/4+,
+      F000::/5+,F800::/6+,
+      FC00::/7+,FE00::/9+,
+      FE80::/10+,
+      FEC0::/10+,FF00::/8+
+    ];
+    peering_prefix   = [ {{ peering_prefix }} ];
+    private_as_16bit = [ 64512..65535 ];
+
+    # RFC + NORIR + NOLIR bogons
+    full_bogons = [
+    {%- if fullbogons %}
+      {{ "+,\n      ".join(fullbogons) }}+
+    {%- endif %}
+    ];
+
+    # Spamhaus DROP list
+    spamhaus_drop = [
+    {%- if drop_list_prefixes %}
+      {{ "+,\n      ".join(drop_list_prefixes) }}+
+    {%- endif %}
+    ];
+
+    if (net ~ default_route)                    then return false;
+    if (net ~ ipv6_bogons)                      then return false;
+    if (net ~ peering_prefix)                   then return false;
+    if (net ~ full_bogons)                      then bgp_community.add(({{ local_as_number }},60001));
+    if (net ~ spamhaus_drop)                    then bgp_community.add(({{ local_as_number }},60003));
+    if (bgp_path.first ~ private_as_16bit)      then return false;
+    if (net.len < 19) || (net.len > 64)         then return false;
+
+    return true;
+}
+
+#############
+# FUNCTIONS #
+#############
+
+# BGP output filter (based on communities)
+function bgp_out(int peeras)
+{
+  if !(source = RTS_BGP) then return false;
+  return true;
+}
+
+####################
+# OUTBOUND FILTERS #
+####################
+
+# Outbound filter will be individually applied in peer config file base on peer's import/export policy
+
+template bgp PEERS {
+    debug {events, states};
+    import all;
+    export all;
+    local as {{ local_as_number }};
+    import limit {{ max_prefix }} action restart;
+    start delay time {{ start_delay_time }};
+    rs client;
+    passive on;
+    interpret communities no;
+    debug { states, events };
+}
+
+template pipe PIPES {
+    table master;
+    mode transparent;
+}
+
+#############
+# PROTOCOLS #
+#############
+
+# Prevent BIRD from updating kernel routing tables, it's not necessary
+protocol kernel {
+#    disabled;
+    export all;
+}
+
+protocol device {
+}
+
+# Disable FIB for directly connected routes
+protocol direct {
+    disabled;
+}
+
+#######################
+# COMMUNITY FUNCTIONS #
+#######################
+function prepend_func()
+{
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  bgp_path.prepend(bgp_path.first);
+  return true;
+}
+
+#########################################
+# Route Server clients/peer config      #
+#########################################
+{% for peer in peers_data %}
+table T{{ peer.peer_as_number }};
+
+protocol pipe P{{ peer.peer_as_number }} from PIPES {
+    description "{{ peer.peer_name }}";
+    peer table T{{ peer.peer_as_number }};
+    export where bgp_out({{ peer.peer_as_number }});
+}
+
+function prefix_check_as{{ peer.peer_as_number }}()
+prefix set prefixlist;
+{
+    {%- if peer.prefixes %}
+    prefixlist = [
+      {{ ",\n      ".join(peer.prefixes)}}
+    ];
+    if ! (net ~ prefixlist) then bgp_community.add(({{ local_as_number }},60002));
+    {%- endif %}
+    return true;
+}
+
+{% for session in peer.sessions %}
+function import_{{ session.session_us_ip }}()
+{
+    # sanity checks
+    if ! (avoid_martians()) then return false;
+    if (bgp_path.first != {{ peer.peer_as_number }}) then return false;
+    prefix_check_as{{ peer.peer_as_number }}();
+    bgp_community.add (({{ local_as_number }},{{ origin_community_code }}{{ session.session_int_ip }}));
+    # list of peers to filter or prepend
+    {%- for ip in session.session_prepend_int_ips %}
+    bgp_community.add(({{ local_as_number }},{{ prepend_community_code }}{{ ip }}));
+    {%- endfor %}
+    {%- for ip in session.session_filter_int_ips %}
+    bgp_community.add(({{ local_as_number }},{{ filter_community_code }}{{ ip }}));
+    {%- endfor %}
+    return true;
+}
+
+function export_{{ session.session_us_ip }}()
+{
+    if (({{ local_as_number }},{{ filter_community_code }}{{ session.session_int_ip }}) ~ bgp_community) then return false;
+    if (({{ local_as_number }},{{ prepend_community_code }}{{ session.session_int_ip }}) ~ bgp_community) then prepend_func();
+    {%- if session.session_prepend_int_ips %}
+    {%- for ip in session.session_prepend_int_ips %}
+    if (({{ local_as_number }},{{ origin_community_code }}{{ ip }}) ~ bgp_community) then prepend_func();
+    {%- endfor %} 
+    {%- endif %}
+    {%- for ip in session.session_filter_int_ips %}
+    if (({{ local_as_number }},{{ origin_community_code }}{{ ip }}) ~ bgp_community) then return false;
+    {%- endfor %}
+    {%- if session.fullbogons_filtering %}
+    if (({{ local_as_number }},60001) ~ bgp_community) then return false;
+    {%- endif %}
+    {%- if session.irrdb_filtering %}
+    if (({{ local_as_number }},60002) ~ bgp_community) then return false;
+    {%- endif %}
+    {%- if session.drop_list_filtering %}
+    if (({{ local_as_number }},60003) ~ bgp_community) then return false;
+    {%- endif %}
+    return true;
+}
+
+protocol bgp peer_{{ session.session_us_ip }} from PEERS {
+    description "{{ peer.peer_name}} / AS{{ peer.peer_as_number }} - {{ session.session_ip }}";
+    neighbor {{ session.session_ip }} as {{ peer.peer_as_number }};
+    import where import_{{ session.session_us_ip }}();
+    export where export_{{ session.session_us_ip }}();
+    table T{{ peer.peer_as_number }};
+    {%- if session.session_bgp_password != "" %}
+    password "{{ session.session_bgp_password }}";
+    {%- endif %}
+}
+{%- endfor %}
+{% endfor %}

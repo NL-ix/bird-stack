@@ -1,0 +1,127 @@
+##################
+# GLOBAL OPTIONS #
+##################
+
+log "{{ bird_logfile }}" {info, warning, error, fatal, remote, auth, trace, bug};
+
+debug commands 2;
+
+router id {{ router_id }};
+
+listen bgp address {{ listen_bgp_address }};
+
+timeformat route    iso long;
+timeformat protocol iso long;
+timeformat base     iso long;
+timeformat log      iso long;
+
+#############
+# PROTOCOLS #
+#############
+
+# Gets interface information, doesn't do route updates.
+protocol device {
+}
+
+# Gets connected routes, not needed.
+protocol direct {
+    disabled;
+}
+
+# Interfaces with kernel routing table, not needed.
+protocol kernel {
+    disabled;
+}
+
+#############
+# TEMPLATES #
+#############
+
+template bgp PEERS {
+    debug { states, events };
+    import limit {{ max_prefix }} action restart;
+    local as {{ local_as_number }};
+    passive on;
+    rs client;
+    interpret communities off;
+    hold time 240;
+    keepalive time 60;
+    connect delay time {{ connect_delay_time }};
+}
+
+#############
+# FUNCTIONS #
+#############
+
+function clean_route (int peeras)
+prefix set unwanted;
+{
+    unwanted = {{ unwanted_prefixes }};
+
+    if (bgp_path.first != peeras) then return false;
+    if (net ~ unwanted) then return false;
+    return true;
+}
+
+function prepend_prefix () {
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+    bgp_path.prepend (bgp_path.first);
+}
+
+# community format
+# ({{ local_as_number }},abccc)
+# a: type
+#    1: filter out prefix to peer
+#    2: prepend prefix to peer
+#    3: prefix received from peer
+# b: peer_octect3 - subnet_octet3
+# c: peer_octect4
+
+#####################
+# PEER CONFIGS #
+#####################
+{%- for peer in peers_data %}
+{% for session in peer.sessions %}
+filter import_{{ session.session_us_ip }} {
+    if (!clean_route ({{ peer.peer_as_number }})) then reject;
+    bgp_community.add (({{ local_as_number }},{{ origin_community_code }}{{ session.session_int_ip }})); # origin
+    # list of peers to filter/prepend prefixes to ...
+    {%- for ip in session.session_filter_int_ips %}
+    bgp_community.add (({{ local_as_number }},{{ sfilter_community_code }}{{ ip }}));
+    {%- endfor %}
+    {%- for ip in session.session_prepend_int_ips %}
+    bgp_community.add (({{ local_as_number }},{{ prepend_community_code }}{{ ip }}));
+    {%- endfor %}
+    accept;
+}
+
+filter export_{{ session.session_us_ip }} {
+    if (({{ local_as_number }},{{ filter_community_code }}{{ session.session_int_ip }}) ~ bgp_community) then reject; # filter
+    if (({{ local_as_number }},{{ prepend_community_code }}{{ session.session_int_ip }}) ~ bgp_community) then prepend_prefix (); # prepend
+    # list of peers to filter prefixes from ...
+    {%- if session.session_filter_int_ips %}
+    {%- for ip in session.session_filter_int_ips %}
+    if (({{ local_as_number }},{{ origin_community_code }}{{ ip }}) ~ bgp_community) then reject;
+    {%- endfor %} 
+    {%- endif %}
+    accept;
+}
+
+protocol bgp peer_{{ session.session_us_ip }} from PEERS {
+    description "{{ peer.peer_name }}";
+    neighbor {{ session.session_ip }} as {{ peer.peer_as_number }};
+    import filter import_{{ session.session_us_ip }};
+    export filter export_{{ session.session_us_ip }};
+}
+
+################################################################################
+{%- endfor %}
+{%- endfor %}
