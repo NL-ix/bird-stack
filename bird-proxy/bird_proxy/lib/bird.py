@@ -101,11 +101,11 @@ class BirdSocket:
 
         if not file:
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__sock.settimeout(3.0)
+            self.__sock.settimeout(10.0)
             self.__sock.connect((self.__host, self.__port))
         else:
             self.__sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self.__sock.settimeout(3.0)
+            self.__sock.settimeout(10.0)
             self.__sock.connect(self.__file)
 
         self.__sock.recv(1024)
@@ -140,9 +140,15 @@ class BirdSocket:
             data = self.__sock.recv(BUFSIZE)
 
             lines = (lastline + data).split("\n")
-            if len(data) == BUFSIZE:
-                lastline = lines[-1]
-                lines = lines[:-1]
+
+            # NOTE: this if-statement has been commented out because BIRD
+            # sometimes returns less bytes than BUFSIZE while more data is
+            # on it's way. in that case we want to continue reading, but the
+            # length check caused reading to stop. why this happens is
+            # currently unclear
+            #if len(data) == BUFSIZE:
+            lastline = lines[-1]
+            lines = lines[:-1]
 
             for line in filter(lambda x: x.strip() or
                                allow_empty_lines, lines):

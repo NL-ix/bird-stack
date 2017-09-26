@@ -111,13 +111,13 @@ class ProtocolInformationCommand(BIRDCommand):
             routes = re.match(
                 r'^\s*Routes:\s+'
                 '(?P<imported>\d+) imported, '
-                '(?P<exported>\d+), '
+                '(?P<exported>\d+) exported, '
                 '(?P<preferred>\d+) preferred$', line)
             if routes is not None:
                 current_result['prefixes'] = {
-                    'imported': routes.group('imported'),
-                    'exported': routes.group('exported'),
-                    'preferred': routes.group('preferred'),
+                    'imported': int(routes.group('imported')),
+                    'exported': int(routes.group('exported')),
+                    'preferred': int(routes.group('preferred')),
                 }
 
             bgp_state = re.match(r'^\s*BGP state:\s+(?P<bgp_state>\w+)$', line)
