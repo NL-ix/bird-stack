@@ -21,6 +21,12 @@ import subprocess
 from .validators import ValidatorPrefixListEntry
 
 
+def ensure_no_spaces(s):
+    if s is None:
+        return None
+    return s.replace(' ', '')
+
+
 class BGPQ3Error(Exception):
     pass
 
@@ -47,9 +53,11 @@ class ASObjectPrefixes(BGPQ3Data):
         self.data = self._get_data()
 
     def _get_data(self):
+        bgpq3_sources = ensure_no_spaces(self.bgpq3_sources)
+
         cmd = [self.bgpq3_path]
         cmd += ["-h", self.bgpq3_host]
-        cmd += ["-S", self.bgpq3_sources]
+        cmd += ["-S", bgpq3_sources]
         cmd += ["-3"]
         cmd += ["-6"] if self.ip_ver == "ipv6" else ["-4"]
         cmd += ["-A"]
