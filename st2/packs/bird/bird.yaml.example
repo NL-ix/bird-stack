@@ -10,9 +10,9 @@ bgpq3_sources: "RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,R
 
 # FULLBOGONS
 ipv4_fullbogons_source_urls:
-- "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt"
+- "https://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt"
 ipv6_fullbogons_source_urls:
-- "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv6.txt"
+- "https://www.team-cymru.org/Services/Bogons/fullbogons-ipv6.txt"
 
 # DROP LIST
 ipv4_drop_list_source_urls:
