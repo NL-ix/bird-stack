@@ -126,7 +126,7 @@ class ProtocolInformationCommand(BIRDCommand):
 
             ip_address = re.match(
                 r'^\s*Neighbor address:\s+'
-                '(?P<ip_address>\d+\.\d+\.\d+\.\d+)$', line)
+                '(?P<ip_address>\S+)$', line)
             if ip_address is not None:
                 current_result['ip_address'] = ip_address.group('ip_address')
 
