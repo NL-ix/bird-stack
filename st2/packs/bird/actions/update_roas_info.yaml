@@ -1,0 +1,7 @@
+---
+name: update_roas_info
+pack: bird
+runner_type: python-script
+description: Retrieves (and store) ROAs info
+enabled: true
+entry_point: update_roas_info.py

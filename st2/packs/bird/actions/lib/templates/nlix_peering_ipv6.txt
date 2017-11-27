@@ -145,6 +145,15 @@ function prepend_func()
   return true;
 }
 
+#######
+# ROA #
+#######
+roa table roa_table {
+  {%- for roa_entry in roas_info %}
+       roa {{roa_entry.prefix}} max {{roa_entry.max_length}} as {{roa_entry.asn}};
+  {%- endfor %}
+}
+
 #########################################
 # Route Server clients/peer config      #
 #########################################
@@ -162,9 +171,11 @@ prefix set prefixlist;
 {
     {%- if peer.prefixes %}
     prefixlist = [
-      {{ ",\n      ".join(peer.prefixes)}}
+      {{ "+,\n      ".join(peer.prefixes) }}+
     ];
     if ! (net ~ prefixlist) then bgp_community.add(({{ local_as_number }},60002));
+    {%- else %}
+    bgp_community.add(({{ local_as_number }},60002));
     {%- endif %}
     return true;
 }
@@ -175,8 +186,19 @@ function import_{{ session.session_us_ip }}()
     # sanity checks
     if ! (avoid_martians()) then return false;
     if (bgp_path.first != {{ peer.peer_as_number }}) then return false;
+
     prefix_check_as{{ peer.peer_as_number }}();
+    {%- if session.irrdb_filtering %}
+    if (({{ local_as_number }},60002) ~ bgp_community) then return false;
+    {%- endif %}
+
+    if (roa_check (roa_table) != ROA_VALID) then bgp_community.add(({{ local_as_number }},60004));
+    {%- if session.roa_filtering %}
+    if (({{ local_as_number }},60004) ~ bgp_community) then return false;
+    {%- endif %}
+
     bgp_community.add (({{ local_as_number }},{{ origin_community_code }}{{ session.session_int_ip }}));
+
     # list of peers to filter or prepend
     {%- for ip in session.session_prepend_int_ips %}
     bgp_community.add(({{ local_as_number }},{{ prepend_community_code }}{{ ip }}));
@@ -207,6 +229,9 @@ function export_{{ session.session_us_ip }}()
     {%- endif %}
     {%- if session.drop_list_filtering %}
     if (({{ local_as_number }},60003) ~ bgp_community) then return false;
+    {%- endif %}
+    {%- if session.roa_filtering %}
+    if (({{ local_as_number }},60004) ~ bgp_community) then return false;
     {%- endif %}
     return true;
 }

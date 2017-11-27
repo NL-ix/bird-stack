@@ -75,6 +75,17 @@ class BIRDConfig(object):
             raise BirdConfigLibError("NO DROP list prefixes stored in the system.({})".format(e))
         return drop_list_prefixes
 
+
+    def _get_roas_info(self):
+        roas_info_key = "roas_info_{}".format(self.ip_version)
+        try:
+            roas_info = json.loads(self.st_client.keys.get_by_name(name=roas_info_key).value)
+        except ValueError as e:
+            raise BirdConfigLibError("Error in stored ROAs info decoding: {}".format(e))
+        except AttributeError as e:
+            raise BirdConfigLibError("NO ROAs info stored in the system.({})".format(e))
+        return roas_info
+
     def get_prefixes(self, as_object):
         prefixes_key = "prefixes_{}_{}".format(as_object, self.ip_version)
         try:
@@ -111,7 +122,8 @@ class BIRDConfig(object):
             template_context_data.update(
                 {'peers_data': self._format_peers_data(peers_data),
                  'fullbogons': self._get_fullbogons(),
-                 'drop_list_prefixes': self._get_drop_list_prefixes()}
+                 'drop_list_prefixes': self._get_drop_list_prefixes(),
+                 'roas_info': self._get_roas_info()}
             )
         except Exception as e:
             raise BirdConfigLibError("Error in peers data formatting: {}".format(e))
@@ -177,6 +189,7 @@ class BIRDConfigIPv4(BIRDConfig):
             session = {
                 'session_ip': session['ip_address']['ipv4'],
                 'irrdb_filtering': session['cfg'].get('irrdb_filtering'),
+                'roa_filtering': session['cfg'].get('roa_filtering'),
                 'fullbogons_filtering': session['cfg'].get('fullbogons_filtering'),
                 'drop_list_filtering': session['cfg'].get('drop_list_filtering'),
                 'session_int_ip': int_ipv4(session['ip_address']['ipv4'],
@@ -238,6 +251,7 @@ class BIRDConfigIPv6(BIRDConfig):
             session = {
                 'session_ip': session['ip_address']['ipv6'],
                 'irrdb_filtering': session['cfg'].get('irrdb_filtering'),
+                'roa_filtering': session['cfg'].get('roa_filtering'),
                 'fullbogons_filtering': session['cfg'].get('fullbogons_filtering'),
                 'drop_list_filtering': session['cfg'].get('drop_list_filtering'),
                 'session_int_ip': int_ipv4(session['ip_address']['ipv4'],

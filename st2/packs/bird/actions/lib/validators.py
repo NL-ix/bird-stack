@@ -252,7 +252,8 @@ class ValidatorPrefixListEntry(ConfigParserValidator):
         v["prefix"] = str(ip_obj)
         v["length"] = pref_len
         v["comment"] = str(v["comment"]) if "comment" in v else None
-        v["max_length"] = ip_obj.max_prefixlen
+        v["max_length"] = int(v.get('max_length', ip_obj.max_prefixlen))
+        v["version"] = ip_obj.version
 
         if "exact" in v:
             try:

@@ -21,6 +21,10 @@ ipv4_drop_list_source_urls:
 ipv6_drop_list_source_urls:
 - "https://www.spamhaus.org/drop/dropv6.txt"
 
+# ROA
+roas_info_source_urls:
+- "http://localcert.ripe.net:8088/export.json"
+
 # ROUTE-SERVERS CONFIGURATION
 bird_servers:
   
