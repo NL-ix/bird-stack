@@ -19,6 +19,7 @@ Currently, the following actions listed below are supported
 | bird.update_drop_list_info                 | bird         | Retrieves (and store) DROP list from the source urls specified in the pack configuration file  |
 | bird.update_fullbogons_info                | bird         | Retrieves (and store) fullbogons from the source urls specified in the pack configuration file |
 | bird.update_prefixes_info                  | bird         | Retrieves prefixes from IRR databases using BGPQ3 and store them in the St2 datastore          |
+| bird.update_roas_info                      | bird         | Retrieves (and store) ROAs info                                                                |
 +--------------------------------------------+--------------+------------------------------------------------------------------------------------------------+
 
 ```
@@ -51,6 +52,10 @@ DROP LIST
 
 ipv4_drop_list_source_urls: list of the source urls for IPv4 DROP Lists retrieval
 ipv6_drop_list_source_urls: list of the source urls for IPv6 DROP Lists retrieval
+
+ROA
+
+roas_info_source_urls: list of the source urls for ROA info retrieval
 
 ROUTE-SERVERS CONFIGURATION
 
@@ -89,9 +94,10 @@ At the moment the only complex value is the peers data to use as input for the a
         'prepend_ips': list of ip adresses (dict) to prepend,
         'bgp_password': str,
         'max_prefixes': int,
-        'irrdb_filtering': boolan (True to activate),
-        'fullbogons_filtering': boolan (True to activate),
-        'drop_list_filtering': boolan (True to activate)
+        'irrdb_filtering': boolean (True to activate),
+        'roa_filtering': boolean (True to activate),
+        'fullbogons_filtering': boolean (True to activate),
+        'drop_list_filtering': boolean (True to activate)
     }
 }
 ```
@@ -124,9 +130,10 @@ Each peering session is specified in the following format:
 ```
 { 
     'session_ip': string (IPv4 OR IPv6 address depending from the configuration we are generating),
-    'irrdb_filtering': boolean (True to activate),
-    'fullbogons_filtering': boolean (True to activate),
-    'drop_list_filtering': boolean (True to activate),
+    'irrdb_filtering': boolean (True if active),
+    'roa_filtering': boolean (True if active),
+    'fullbogons_filtering': boolean (True if active),
+    'drop_list_filtering': boolean (True if active),
     'session_int_ip': string (string representing the IPv4 of the session; can be used as a part of a community string),
     'session_us_ip': session IP with "." or ":" replaced with "_",
     'session_bgp_password': string,
