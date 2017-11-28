@@ -95,7 +95,7 @@ filter import_{{ session.session_us_ip }} {
     bgp_community.add (({{ local_as_number }},{{ origin_community_code }}{{ session.session_int_ip }})); # origin
     # list of peers to filter/prepend prefixes to ...
     {%- for ip in session.session_filter_int_ips %}
-    bgp_community.add (({{ local_as_number }},{{ sfilter_community_code }}{{ ip }}));
+    bgp_community.add (({{ local_as_number }},{{ filter_community_code }}{{ ip }}));
     {%- endfor %}
     {%- for ip in session.session_prepend_int_ips %}
     bgp_community.add (({{ local_as_number }},{{ prepend_community_code }}{{ ip }}));
