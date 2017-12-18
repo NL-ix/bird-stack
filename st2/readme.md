@@ -114,6 +114,14 @@ In the template design the following values can be used as placeholder:
 - ALL the values defined in the `config_context_values` section of the bird pack configuration file
 - `fullbogons`: contain the list of the fullbogons stored in the st2 storage by the action 'bird.update_fullbogons_info'
 - `drop_list_prefixes`: DROP list prefixes stored in the st2 storage by the action 'bird.update_drop_list_info'
+- `roas_info`: list of ROA information stored in the st2 storage by the action 'bird.update_roas_info' in the following format
+```
+{
+    'prefix': string,
+    'max_length': integer,
+    'asn': string
+ }
+```
 - `peers_data`: list of the peering data grouped for AS-Number (Organization) in the following format
 
 ```
