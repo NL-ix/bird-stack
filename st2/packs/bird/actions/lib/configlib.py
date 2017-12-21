@@ -226,10 +226,7 @@ class BIRDConfigIPv6(BIRDConfig):
             if peer_as not in ret:
 
                 if peer_as_macro:
-                    if not peer_as_macro.startswith("as-"):
-                        as_object_key = "as-{}".format(peer_as_macro)
-                    else:
-                        as_object_key = peer_as_macro
+                    as_object_key = peer_as_macro
                 else:
                     if not peer_as_number.startswith("AS"):
                         as_object_key = "AS{}".format(peer_as_number)
