@@ -42,11 +42,9 @@ class BIRDCommand(object):
 
     def execute(self, **kwargs):
         try:
-            command = self.COMMAND_TEMPLATE.format(**kwargs)
-
+            command = re.sub(' +', ' ', self.COMMAND_TEMPLATE.format(**kwargs))
         except KeyError as e:
             raise MissingCommandArgument("argument {} not specified".format(e))
-
         result = self.bird_connection.cmd(
             command,
             allow_empty_lines=self.ALLOW_EMPTY_LINES)
@@ -137,6 +135,80 @@ class ProtocolInformationCommand(BIRDCommand):
         return True, results
 
 
+class ShowRouteCommand(BIRDCommand):
+
+    COMMAND_TEMPLATE = 'show route {prefix} {table} {cond} {detail} {export} {protocol}'
+
+    def parse_result(self, data):
+
+        def _format_communities(line):
+            return line.replace("(", "").replace(")", "").replace(
+                ",", ":").split()
+
+        prefix_regexp = re.compile(r"(?P<prefix>[a-f0-9\.:\/]+)?\s+")
+
+        route_summary_regexp = re.compile(
+            r"(?:.*via\s+(?P<peer>[^\s]+) on (?P<interface>[^\s]+)|(?:\w+)?)?\s*"
+            r"\[(?P<source>[^\s]+) (?P<date>[^\s]+) (?P<time>[^\]\s]+)(?: from (?P<peer2>[^\s]+))?\]"
+        )
+
+        success, lines = data
+
+        if not success:
+            return success, lines
+
+        ret = []
+
+        current_prefix = None
+        route_data = {}
+
+        for line in lines.splitlines():
+
+            line = line.strip()
+
+            if 'via' in line:
+                if route_data:
+                    ret.append(route_data)
+                    route_data = {}
+
+                prefix_match = prefix_regexp.match(line)
+                if prefix_match:
+                    current_prefix = prefix_match.group('prefix')
+
+                route_data = {"prefix": current_prefix}
+                route_summary_match = route_summary_regexp.match(line)
+                route_summary = route_summary_match.groupdict()
+                if not route_summary['peer']:
+                    route_summary['peer'] = route_summary.pop('peer2')
+                else:
+                    del route_summary['peer2']
+                route_data.update(route_summary)
+
+            if 'BGP.' in line:
+                line_body = line[4:]
+                line_values = line_body.split(": ")
+                key = line_values[0]
+                if len(line_values) == 2:
+                    value = line_values[1]
+                else:
+                    value = None
+                if key == 'community':
+                    value = _format_communities(value)
+                route_data.update({key: value})
+
+            if line.startswith('('):
+                communities = route_data.get('community', [])
+                extra_communities = _format_communities(line)
+                route_data.update({'community': communities + extra_communities})
+            else:
+                continue
+
+        if route_data and route_data not in ret:
+            ret.append(route_data)
+
+        return True, ret
+
+
 class BIRDManager(object):
 
     def __init__(self, ip_version, bird_proxy_config):
@@ -219,5 +291,60 @@ class BIRDManager(object):
 
         command = ProtocolInformationCommand(conn)
         result = command.execute(wildcard=wildcard)
+
+        return result
+
+    def get_routes_information(
+            self,
+            forwarding_table=False, prefix=None,
+            table=None,
+            fltr=None, where=None,
+            detail=False,
+            export_mode=None, export_protocol=None,
+            protocol=None):
+
+        conn = self.connect()
+
+        if prefix and forwarding_table:
+            prefix = "for {}".format(prefix)
+        elif not prefix:
+            prefix = ""
+
+        if not table:
+            table = ""
+
+        if fltr and where:
+            raise BIRDToolError("Incoerent show route parameters: fltr, where")
+        elif fltr and not where:
+            cond = "filter {}".format(fltr)
+        elif where and not fltr:
+            cond = "where {}".format(where)
+        else:
+            cond = ""
+
+        if detail:
+            detail = "all"
+        else:
+            detail = ""
+
+        if export_mode and export_mode not in ("export", "preexport", "noexport"):
+            raise BIRDToolError("Invalid export mode: {}".format(export_mode))
+        elif export_mode and not export_protocol:
+            raise BIRDToolError("Missing value for export mode")
+        elif export_mode and export_protocol:
+            export = "{} {}".format(export_mode, export_protocol)
+        else:
+            export = ""
+
+        if protocol:
+            protocol = "protocol {}".format(protocol)
+        else:
+            protocol = ""
+
+        command = ShowRouteCommand(conn)
+        result = command.execute(
+            prefix=prefix, table=table,
+            cond=cond, detail=detail, export=export,
+            protocol=protocol)
 
         return result

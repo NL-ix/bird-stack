@@ -101,3 +101,39 @@ def protocol_info_verbose():
         'outcome': outcome,
         'message': message
     })
+
+
+@app.route('/routesinfo', methods=['POST'])
+@token_required
+def routes_info():
+    outcome = False
+
+    ip_version = request.form.get('ip_version')
+
+    forwarding_table = request.form.get('forwarding_table')
+    prefix = request.form.get('prefix')
+    table = request.form.get('table')
+    fltr = request.form.get('fltr')
+    where = request.form.get('where')
+    detail = request.form.get('detail')
+    export_mode = request.form.get('export_mode')
+    export_protocol = request.form.get('export_protocol')
+    protocol = request.form.get('protocol')
+
+    try:
+        bird = birdtool.BIRDManager(ip_version, app.config)
+        outcome, message = bird.get_routes_information(
+            forwarding_table=forwarding_table, prefix=prefix, table=table,
+            fltr=fltr, where=where, detail=detail,
+            export_mode=export_mode, export_protocol=export_protocol,
+            protocol=protocol)
+
+    except birdtool.BIRDToolError as e:
+        app.logger.exception("failed to retrieve data from bird")
+
+        message = str(e)
+
+    return jsonify({
+        'outcome': outcome,
+        'message': message
+    })
