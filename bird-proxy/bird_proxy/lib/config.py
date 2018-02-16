@@ -23,6 +23,17 @@ class ConfigError(Exception):
     pass
 
 
+def update(orig_dict, override_dict):
+    for k, v in override_dict.iteritems():
+        if isinstance(v, dict):
+            orig_dict[k] = update(orig_dict.get(k, {}), v)
+
+        else:
+            orig_dict[k] = v
+
+    return orig_dict
+
+
 def validate_application_name(name):
     PATTERN = '\A[a-zA-Z0-9_-]+\Z'
     return re.match(PATTERN, name) is not None
@@ -46,7 +57,6 @@ def get_config(application_name):
     if not validate_application_name(application_name):
         raise ValueError("invalid application name")
 
-    config_dict = {}
     config_path = build_config_path(application_name)
     config_filename = application_name + '.yaml'
 
@@ -61,13 +71,11 @@ def get_config(application_name):
     default_filename = get_filepath(defaults=True)
     default_config = get_dict_from_yaml_file(default_filename)
 
-    config_dict.update(default_config)
-
     # Load specific config to override defaults
     override_filename = get_filepath()
     override_config = get_dict_from_yaml_file(override_filename)
 
-    config_dict.update(override_config)
+    config_dict = update(default_config, override_config)
 
     return config_dict
 
