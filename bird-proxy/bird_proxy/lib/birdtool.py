@@ -151,10 +151,13 @@ class BIRDManager(object):
             raise BIRDToolError("Invalid IP version: {}".format(ip_version))
 
         self.ip_version = ip_version
-        self.base_config_folder = bird_proxy_config.get("BIRD_CONFIG_FOLDER")
+        self.base_config_folder = bird_proxy_config.get('BIRD_CONFIG_FOLDER')
+        self.bird_socket_timeout = bird_proxy_config.get('BIRD_SOCKET_TIMEOUT')
 
     def connect(self):
-        return bird.BirdSocket(file=self.bird_socket_file)
+        return bird.BirdSocket(
+            file=self.bird_socket_file,
+            timeout=self.bird_socket_timeout)
 
     def store_config_file(self, bird_config_file):
         bird_config_filename = os.path.join(

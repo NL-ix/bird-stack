@@ -1,5 +1,6 @@
 BIRD_SOCKET: /var/run/bird/bird.ctl
 BIRD6_SOCKET: /var/run/bird/bird6.ctl
+BIRD_SOCKET_TIMEOUT: 10.0
 BIRD_CONFIG_FOLDER: /var/bird
 
 API_TOKEN: 'replacemewithtoken'
