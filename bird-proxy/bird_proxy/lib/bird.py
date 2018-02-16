@@ -89,23 +89,24 @@ END_CODES = ERROR_CODES.keys() + SUCCESS_CODES.keys()
 
 class BirdSocket:
 
-    def __init__(self, host="", port="", file=""):
+    def __init__(self, host="", port="", file="", timeout=10.0):
         self.__file = file
         self.__host = host
         self.__port = port
         self.__sock = None
+        self.__timeout = timeout
 
-    def __connect(self):
+    def __connect(self, timeout=10.0):
         if self.__sock:
             return
 
         if not file:
             self.__sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__sock.settimeout(10.0)
+            self.__sock.settimeout(timeout)
             self.__sock.connect((self.__host, self.__port))
         else:
             self.__sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self.__sock.settimeout(10.0)
+            self.__sock.settimeout(timeout)
             self.__sock.connect(self.__file)
 
         self.__sock.recv(1024)
@@ -121,7 +122,7 @@ class BirdSocket:
 
     def cmd(self, cmd, allow_empty_lines=False):
         try:
-            self.__connect()
+            self.__connect(timeout=self.__timeout)
             self.__sock.send(cmd + "\n")
             data = self.__read(allow_empty_lines=allow_empty_lines)
             return data
