@@ -37,4 +37,4 @@ class DeployConfig(Action):
                                            ip_version).execute()
         except BIRDProxyError as e:
             return (False, str(e))
-        return (bool(resp.get("outcome")), resp.get("message"))
+        return (resp.get("outcome"), resp.get("message"))
