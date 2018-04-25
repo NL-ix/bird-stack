@@ -25,6 +25,13 @@ ipv6_drop_list_source_urls:
 roas_info_source_urls:
 - "http://localcert.ripe.net:8088/export.json"
 
+rir_trust_anchors:
+- "APNIC from IANA RPKI Root"
+- "ARIN RPKI Root"
+- "AfriNIC RPKI Root"
+- "LACNIC RPKI Root"
+- "RIPE NCC RPKI Root"
+
 # ROUTE-SERVERS CONFIGURATION
 bird_servers:
   

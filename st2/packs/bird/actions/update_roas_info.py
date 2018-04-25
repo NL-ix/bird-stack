@@ -28,6 +28,7 @@ class UpdateROAsInfo(Action):
 
     def run(self):
         source_urls = self.config.get('roas_info_source_urls')
+        rir_trust_anchors = self.config.get('rir_trust_anchors')
 
         ret = []
 
@@ -38,8 +39,11 @@ class UpdateROAsInfo(Action):
                 return (False, str(e))
 
             request_out = r.json().get("roas", [])
+            trusted_entries = filter(
+                lambda x: x['ta'] in rir_trust_anchors, request_out)
+
             roas_info = []
-            for roa in request_out:
+            for roa in trusted_entries:
 
                 if roa.get('asn').startswith("AS"):
                     asn = int(roa.get('asn')[2:])
