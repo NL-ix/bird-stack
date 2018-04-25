@@ -16,3 +16,13 @@ parameters:
     description: IP version of the process to affect on the target BIRD server (ipv4 or ipv6)
     default: ipv4
     position: 2
+  store_results:
+    type: boolean
+    description: Use St2 datastore for results storage
+    default: false
+    position: 3
+  ttl:
+    type: integer
+    description: Stored data TTL (Time To Live) 
+    required: false
+    position: 4

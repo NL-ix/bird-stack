@@ -13,14 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 from st2actions.runners.pythonrunner import Action
+from st2client.client import Client
+from st2client.models import KeyValuePair
 
 from lib.birdproxy import BIRDProxyError, SessionsInfoRequest
 
 
 class GetSessionsInfo(Action):
 
-    def run(self, router_id, ip_version):
+    def run(self, router_id, ip_version, store_results, ttl=None):
 
         try:
             config = self.config['bird_servers'][router_id]
@@ -36,6 +40,27 @@ class GetSessionsInfo(Action):
                                        listen_web_port,
                                        api_token,
                                        ip_version).execute()
-            return (bool(resp.get("outcome")), resp.get("message"))
         except BIRDProxyError as e:
             return (False, str(e))
+
+        response = resp.get("outcome")
+        data = resp.get("message")
+
+        if response and store_results:
+            api_base_url = self.config.get('st2_base_url')
+            st_client = Client(base_url=api_base_url)
+            key = "sessions_info_{}_{}".format(
+                router_id, ip_version)
+            value = json.dumps(data)
+            pair = KeyValuePair(name=key,
+                                value=value)
+            if ttl is not None:
+                pair.ttl = ttl
+            try:
+                st_client.keys.update(pair)
+            except Exception as e:
+                return (False, str(e))
+
+            return(response, key)
+        else:
+            return (response, data)
