@@ -14,3 +14,5 @@ parameters:
     type: string
     description: Prefixes IP version (ipv4, ipv6)
     default: ipv4
+  timeout:
+    default: 1200
