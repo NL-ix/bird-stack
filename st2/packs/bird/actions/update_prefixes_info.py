@@ -24,7 +24,7 @@ from lib.irrdbtools import ASObjectPrefixes, BGPQ3Error
 
 class UpdatePrefixesInfo(Action):
 
-    def run(self, as_objects, ip_version):
+    def run(self, as_objects, ip_version, timeout=None):
 
         BGPQ3_DEFAULT_HOST = "rr.ntt.net"
         BGPQ3_DEFAULT_SOURCES = ("RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,"
