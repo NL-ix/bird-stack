@@ -40,6 +40,13 @@ def int_ipv4(ipv4_address, network):
     return o3 + o4
 
 
+def strip_quotes(value):
+    if not isinstance(value, (str, unicode)):
+        return value
+
+    return value.replace('"', '')
+
+
 class BirdConfigLibError(Exception):
     pass
 
@@ -175,9 +182,9 @@ class BIRDConfigIPv4(BIRDConfig):
                         as_object_key = peer_as_number
 
                 peer_data = {
-                    'peer_name': session["peer_name"],
-                    'peer_as_number': peer_as_number,
-                    'peer_as_macro': peer_as_macro,
+                    'peer_name': strip_quotes(session["peer_name"]),
+                    'peer_as_number': strip_quotes(peer_as_number),
+                    'peer_as_macro': strip_quotes(peer_as_macro),
                     'prefixes': self.get_prefixes(as_object_key),
                     'sessions': []
                 }
@@ -234,9 +241,9 @@ class BIRDConfigIPv6(BIRDConfig):
                         as_object_key = peer_as_number
 
                 peer_data = {
-                    'peer_name': session["peer_name"],
-                    'peer_as_number': peer_as_number,
-                    'peer_as_macro': peer_as_macro,
+                    'peer_name': strip_quotes(session["peer_name"]),
+                    'peer_as_number': strip_quotes(peer_as_number),
+                    'peer_as_macro': strip_quotes(peer_as_macro),
                     'prefixes': self.get_prefixes(as_object_key),
                     'sessions': []
                 }
