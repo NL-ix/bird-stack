@@ -1,0 +1,71 @@
+---
+name: get_routes_info
+pack: bird
+runner_type: python-script
+description: Retrieves routes information from the specified BIRD Route-Server using 'show route'
+enabled: true
+entry_point: get_routes_info.py
+parameters:
+  router_id:
+    type: string
+    description: router id of the target BIRD server
+    required: true
+    position: 1
+  ip_version:
+    type: string
+    description: IP version of the process to affect on the target BIRD server (ipv4 or ipv6)
+    default: ipv4
+    position: 2
+  store_results:
+    type: boolean
+    description: Use St2 datastore for results storage
+    default: false
+    position: 3
+  ttl:
+    type: integer
+    description: Stored data TTL (Time To Live)
+    required: false
+    position: 4
+  forwarding_table:
+    type: boolean
+    description: if true adds 'for' option to 'prefix' argument to use forwarding table
+    required: false
+    position: 5
+  prefix:
+    type: string
+    description: specify prefix if you want to get routes for a specific network
+    required: false
+    position: 6
+  table:
+    type: string
+    description: routing table to be queried
+    required: false
+    position: 7
+  fltr:
+    type: string
+    description: specify to get only routes processed and accepted by a given filter
+    required: false
+    position: 8
+  where:
+    type: string
+    description: specify to get only routes matching a given condition
+    required: false
+    position: 9
+  detail:
+    type: boolean
+    description: if true adds 'all' option to the command to get detailed data
+    required: false
+    position: 10
+  export_mode:
+    description: (export|preexport|noexport)
+    type: string
+    required: false
+    position: 11
+  export_protocol:
+    type: string
+    required: false
+    position: 12
+  protocol:
+    type: string
+    required: false
+    position: 13

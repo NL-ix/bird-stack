@@ -105,3 +105,34 @@ class SessionsInfoRequest(BIRDProxyRequest):
                 "Error in the BIRD sessions info retrieval: {}".format(e))
 
         return self._parse_response(r)
+
+
+class RoutesInfoRequest(BIRDProxyRequest):
+
+    def __init__(self, dest_host, listen_web_port,
+                 api_token, ip_version, command_parameters):
+        super(RoutesInfoRequest, self).__init__(dest_host,
+                                                listen_web_port,
+                                                api_token)
+
+        self.ip_version = ip_version
+        self.url = 'routesinfo'
+        self.command_parameters = command_parameters
+
+    def execute(self):
+
+        data = {
+            'api_token': self.api_token,
+            'ip_version': self.ip_version
+        }
+
+        data.update(self.command_parameters)
+
+        url = "{}/{}".format(self.base_url, self.url)
+        try:
+            r = requests.post(url, data=data)
+        except Exception as e:
+            raise BIRDProxyError(
+                "Error in the BIRD routes info retrieval: {}".format(e))
+
+        return self._parse_response(r)
