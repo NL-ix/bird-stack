@@ -15,6 +15,7 @@ Currently, the following actions listed below are supported
 | bird.configurechain                        | bird         | Workflow to generate and deploy a new BIRD configuration file                                  |
 | bird.deploy_config                         | bird         | Deploys a locally stored BIRD configuration file using bird-proxy                              |
 | bird.generate_config                       | bird         | Generates and locally store a BIRD configuration file                                          |
+| bird.get_routes_info                       | bird         | Retrieves routes information from the specified BIRD Route-Server using 'showroute'            |              
 | bird.get_sessions_info                     | bird         | Retrieves sessions information from the specified BIRD Route-Server                            |
 | bird.update_drop_list_info                 | bird         | Retrieves (and store) DROP list from the source urls specified in the pack configuration file  |
 | bird.update_fullbogons_info                | bird         | Retrieves (and store) fullbogons from the source urls specified in the pack configuration file |
