@@ -98,6 +98,59 @@ JSON response in the following format:
  }
 ```
 
+**Get routes info**
+
+*Endpoint*
+/routesinfo
+
+*Input*
+
+request body has to include the keys:
+
+- `api_token`: Authentication token
+- `ip_version`: Version of the BIRD process to affect ('ipv4', 'ipv6')
+
+optional parameters that will be passed to the command 'show route':
+
+- `forwarding_table`: if true adds 'for' option to 'prefix' argument to use forwarding table
+- `prefix`: specify prefix if you want to get routes for a specific network
+- `table`: routing table to be queried
+- `fltr`: specify to get only routes processed and accepted by a given filter
+- `where`: specify to get only routes matching a given condition
+- `detail`: if true adds 'all' option to the command to get detailed data
+- `export_mode`: (export|preexport|noexport)
+- `export_protocol`
+- `protocol`
+
+*Output*
+
+JSON response in the folloing format:
+
+```
+{
+    "outcome": outcome of the operation (True, False),
+    "message": routes information
+ }
+ ```
+
+Routes information are in a list of objects in the following format:
+
+```
+{
+    "prefix": string,
+    "peer": string,
+    "interface": string,
+    "source": string,
+    "date": string,
+    "time": string,
+    "origin": string,
+    "as_path": string,
+    "next_hop": string,
+    "local_pref": string,
+    "community": list of community strings
+}
+```
+
 **Get BGP sessions info**
 
 *Endpoint*
