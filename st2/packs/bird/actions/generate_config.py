@@ -16,7 +16,7 @@
 import json
 import os
 
-from st2actions.runners.pythonrunner import Action
+from st2common.runners.base_action import Action
 from st2client.client import Client
 
 from lib.configlib import BIRDConfigIPv4, BIRDConfigIPv6, BirdConfigLibError

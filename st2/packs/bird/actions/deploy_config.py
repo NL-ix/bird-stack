@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from st2actions.runners.pythonrunner import Action
+from st2common.runners.base_action import Action
 
 from lib.birdproxy import BIRDProxyError, DeployConfigFileRequest
 
