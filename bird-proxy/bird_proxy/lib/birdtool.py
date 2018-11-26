@@ -322,7 +322,7 @@ class BIRDManager(object):
         else:
             cond = ""
 
-        if detail:
+        if detail is True:
             detail = "all"
         else:
             detail = ""

@@ -16,6 +16,7 @@
 import functools
 import sys
 import traceback
+import re
 
 from flask import Flask, request, jsonify
 from lib import birdtool, config
@@ -34,6 +35,13 @@ except config.ConfigError as e:
     sys.exit(1)
 
 app.config.from_mapping(CONFIG)
+
+
+def sanitize(value):
+    if value is not None:
+        return re.sub('[^A-Za-z0-9:./_)(|,~ ]+', '', value)
+    else:
+        return value
 
 
 def token_required(f):
@@ -110,15 +118,15 @@ def routes_info():
 
     ip_version = request.form.get('ip_version')
 
-    forwarding_table = request.form.get('forwarding_table')
-    prefix = request.form.get('prefix')
-    table = request.form.get('table')
-    fltr = request.form.get('fltr')
-    where = request.form.get('where')
-    detail = request.form.get('detail')
-    export_mode = request.form.get('export_mode')
-    export_protocol = request.form.get('export_protocol')
-    protocol = request.form.get('protocol')
+    forwarding_table = True if request.form.get('forwarding_table') == 'True' else False
+    prefix = sanitize(request.form.get('prefix'))
+    table = sanitize(request.form.get('table'))
+    fltr = sanitize(request.form.get('fltr'))
+    where = sanitize(request.form.get('where'))
+    detail = True if request.form.get('detail') == 'True' else False
+    export_mode = sanitize(request.form.get('export_mode'))
+    export_protocol = sanitize(request.form.get('export_protocol'))
+    protocol = sanitize(request.form.get('protocol'))
 
     try:
         bird = birdtool.BIRDManager(ip_version, app.config)
